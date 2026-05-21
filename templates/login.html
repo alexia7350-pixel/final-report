@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入 | 作業提醒管理系統</title>
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <!-- Background Light Blobs -->
+    <div class="bg-glow-container">
+        <div class="bg-glow-blob blob-purple"></div>
+        <div class="bg-glow-blob blob-blue"></div>
+        <div class="bg-glow-blob blob-pink"></div>
+    </div>
+
+    <!-- Flash message hook for JS Toasts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="server-flash" data-category="{{ 'danger' if category == 'error' or category == 'danger' else category }}" data-message="{{ message }}" style="display:none;"></div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="auth-wrapper">
+        <div class="auth-panel glass-panel">
+            <div class="auth-logo-group">
+                <div class="auth-logo-icon">⏰</div>
+                <h1 class="logo-text gradient-text">時程小幫手</h1>
+                <p class="subtitle">作業與報告提醒管理平台</p>
+            </div>
+
+            <h2>帳號登入</h2>
+            <p class="subtitle" style="margin-bottom: 1.5rem;">輸入您的課堂專題系統憑證</p>
+
+            <form class="auth-form" action="{{ url_for('login') }}" method="POST">
+                <div class="form-group">
+                    <label for="username">使用者帳號</label>
+                    <input type="text" id="username" name="username" class="input-glow" placeholder="請輸入註冊帳號" required autocomplete="off">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="password">密碼</label>
+                    <input type="password" id="password" name="password" class="input-glow" placeholder="請輸入您的密碼" required>
+                </div>
+
+                <div class="auth-btn-row">
+                    <button type="submit" class="btn-primary btn-auth-submit">立即登入 🚀</button>
+                </div>
+            </form>
+
+            <div class="auth-footer">
+                還沒有帳號嗎？ 
+                <a href="{{ url_for('register') }}" class="auth-link">立即快速註冊</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

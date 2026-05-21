@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儀表板 | 作業提醒管理系統</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <!-- Background Light Blobs -->
+    <div class="bg-glow-container">
+        <div class="bg-glow-blob blob-purple"></div>
+        <div class="bg-glow-blob blob-blue"></div>
+        <div class="bg-glow-blob blob-pink"></div>
+    </div>
+
+    <!-- Flash message hook for JS Toasts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="server-flash" data-category="{{ 'danger' if category == 'error' or category == 'danger' else category }}" data-message="{{ message }}" style="display:none;"></div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="app-container">
+        <!-- App Header (Navigation) -->
+        <header class="app-header glass-panel animate-slide-in">
+            <div class="logo-group">
+                <span class="logo-icon">⏰</span>
+                <span class="logo-text gradient-text">時程小幫手</span>
+            </div>
+            
+            <div class="nav-user">
+                <div class="user-tag">
+                    <span class="user-avatar">{{ user.username[0] | upper }}</span>
+                    <span>{{ user.username }}</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">安全登出 🚪</a>
+            </div>
+        </header>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card glass-panel">
+                <div class="stat-glow purple"></div>
+                <div class="stat-label">全部項目</div>
+                <div class="stat-val gradient-text" id="total-count">0</div>
+            </div>
+            <div class="stat-card glass-panel">
+                <div class="stat-glow orange"></div>
+                <div class="stat-label">待繳交</div>
+                <div class="stat-val" style="color: var(--neon-orange);" id="pending-count">0</div>
+            </div>
+            <div class="stat-card glass-panel">
+                <div class="stat-glow blue"></div>
+                <div class="stat-label">已完成</div>
+                <div class="stat-val" style="color: var(--neon-green);" id="completed-count">0</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Layout -->
+        <main class="dashboard-grid">
+            
+            <!-- Left Side: Assignments List & Urgency Alerts -->
+            <section class="main-content">
+                <!-- Urgent Alert Card (Dynamically displayed in JS) -->
+                <div class="urgent-panel glass-panel" id="urgent-panel" style="display: none;">
+                    <div class="urgent-header">
+                        <span class="urgent-icon">🚨</span>
+                        <h3 style="color: var(--neon-red);">最緊急截止項目</h3>
+                    </div>
+                    <div class="urgent-assignment-box">
+                        <div class="urgent-title-section">
+                            <span class="urgent-course-tag" id="urgent-course">科目</span>
+                            <h4 id="urgent-title" style="margin-top: 0.4rem;">作業名稱</h4>
+                        </div>
+                        <div class="countdown-box">
+                            <div class="countdown-timer" id="urgent-timer">載入中...</div>
+                            <div class="countdown-label">距離截止時間剩餘</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Assignments Manager Panel -->
+                <div class="list-panel glass-panel">
+                    <div class="panel-header">
+                        <h2>作業與報告清單</h2>
+                        
+                        <div class="filter-group">
+                            <button class="filter-btn active" id="filter-all">全部</button>
+                            <button class="filter-btn" id="filter-pending">待繳交</button>
+                            <button class="filter-btn" id="filter-completed">已完成</button>
+                        </div>
+                        
+                        <button class="btn-primary" id="btn-open-add">＋ 新增項目</button>
+                    </div>
+
+                    <!-- Assignment dynamic container -->
+                    <div class="assignment-list" id="assignments-list">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Side: Sidebar Panels (Push binding & Notif Logs) -->
+            <aside class="sidebar-panel">
+                
+                <!-- Reminder config panel -->
+                <div class="settings-box glass-panel">
+                    <h3>⚙️ 推送通知設定</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.2rem; line-height: 1.4;">
+                        系統支援多方即時推播，截止日前自動提醒，避免漏交作業。
+                    </p>
+
+                    <!-- LINE Notify Integration Card -->
+                    <div class="line-bind-card" style="margin-bottom: 1.5rem;">
+                        <div class="line-icon">💬</div>
+                        <h4 style="font-family:'Outfit',sans-serif;">LINE Notify 綁定</h4>
+                        
+                        {% if user.line_token %}
+                            <div class="line-status active">✓ 已啟用 LINE 訊息推播</div>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); word-break: break-all;">
+                                Token: {{ user.line_token[:8] }}***{{ user.line_token[-8:] }}
+                            </p>
+                            <button class="btn-secondary" id="btn-unbind-line" style="width: 100%; padding: 0.5rem; font-size: 0.8rem; border-color: rgba(255,85,85,0.2); color: var(--neon-red);">
+                                解除 LINE 綁定 🗑️
+                            </button>
+                        {% else %}
+                            <div class="line-status" style="color: var(--text-muted);">✗ 尚未綁定</div>
+                            
+                            <!-- Option 1: Standard One-click OAuth -->
+                            <a href="{{ url_for('line_bind') }}" class="btn-line-oauth">
+                                一鍵綁定 LINE Notify ⚡
+                            </a>
+                            
+                            <!-- Divider -->
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin: 0.3rem 0; width:100%; border-bottom: 1px solid rgba(255,255,255,0.05); line-height: 0.1em;"><span style="background: #181b24; padding:0 10px;">或手動設定</span></div>
+                            
+                            <!-- Option 2: Quick Token input for easy local presentations -->
+                            <div class="line-token-input-group">
+                                <input type="password" id="line-token-direct" placeholder="貼上個人 LINE Token">
+                                <button id="btn-save-line-token">儲存</button>
+                            </div>
+                            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; text-align: left; line-height:1.3;">
+                                💡 開發演示提示：可登入 LINE Notify 官網「申請個人 Access Token」後貼上，可免去 OAuth 回調設定直接使用推播！
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Email Configuration -->
+                    <div class="email-form-box">
+                        <label for="user-email">📧 電子郵件提醒</label>
+                        <div class="input-glow-group">
+                            <input type="email" id="user-email" class="input-glow" style="padding-right: 70px;" placeholder="example@gmail.com" value="{{ user.email or '' }}">
+                            <button class="btn-input-save" id="btn-save-email">儲存</button>
+                        </div>
+                        <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">
+                            系統將在作業即將到期時，自動發送高質感的 HTML 郵件至此信箱。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Instant Notification Logs Logger Center -->
+                <div class="notif-box glass-panel">
+                    <div class="notif-header">
+                        <h3>📋 即時提醒日誌</h3>
+                        <button class="btn-clear-notif" id="btn-clear-notif">清除日誌</button>
+                    </div>
+                    <!-- Notification loop container -->
+                    <div class="notif-list" id="notification-list">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+            </aside>
+        </main>
+    </div>
+
+    <!-- =========================================================================
+    MODAL DIALOG: ADD ASSIGNMENT
+    ========================================================================= -->
+    <div class="modal" id="add-modal">
+        <div class="modal-content glass-panel animate-zoom-in">
+            <div class="modal-header">
+                <h3 style="font-size: 1.3rem;">＋ 新增作業或報告</h3>
+                <button class="btn-close" id="btn-close-add">&times;</button>
+            </div>
+            
+            <form id="add-assignment-form">
+                <div class="form-group">
+                    <label for="ass-title">作業標題 <span style="color: var(--neon-red);">*</span></label>
+                    <input type="text" id="ass-title" class="input-glow" placeholder="例：期末專題投影片繳交" required autocomplete="off">
+                </div>
+                
+                <div class="form-group">
+                    <label for="ass-course">科目名稱 <span style="color: var(--neon-red);">*</span></label>
+                    <input type="text" id="ass-course" class="input-glow" placeholder="例：系統分析與設計" required autocomplete="off">
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="ass-deadline">截止時間 <span style="color: var(--neon-red);">*</span></label>
+                        <input type="datetime-local" id="ass-deadline" class="input-glow" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ass-remind">提前提醒時間</label>
+                        <select id="ass-remind" class="input-glow" style="background-color: #0f111a;">
+                            <option value="1">1 小時前</option>
+                            <option value="3">3 小時前</option>
+                            <option value="6">6 小時前</option>
+                            <option value="12">12 小時前</option>
+                            <option value="24" selected>24 小時前 (1天)</option>
+                            <option value="48">48 小時前 (2天)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="ass-desc">詳細備註 (選填)</label>
+                    <textarea id="ass-desc" class="input-glow" style="height: 80px; resize: none;" placeholder="輸入作業相關連結或詳細說明..."></textarea>
+                </div>
+
+                <div class="form-submit-row">
+                    <button type="button" class="btn-secondary" onclick="document.getElementById('add-modal').style.display='none'">取消</button>
+                    <button type="submit" class="btn-primary">確認新增 🚀</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Core App Logic -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
