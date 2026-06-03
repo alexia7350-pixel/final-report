@@ -1,0 +1,67 @@
+### 測試檔案 (REST Client)
+### 請在 VSCode 中安裝 "REST Client" 擴充功能來執行以下請求
+
+@baseUrl = http://localhost:3000/api
+@userId = 替換為實際的 user id
+@taskId = 替換為實際的 task id
+@reminderId = 替換為實際的 reminder id
+
+### 1. 建立使用者
+# @name createUser
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "name": "測試用戶",
+  "lineId": "line12345"
+}
+
+### 2. 取得使用者資料
+GET {{baseUrl}}/users/{{userId}}
+
+### 3. 建立任務 (同時包含排程提醒)
+# @name createTask
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "title": "軟體工程期末報告",
+  "courseName": "軟體工程",
+  "description": "記得要附上架構圖",
+  "dueDate": "2026-06-15T23:59:00Z",
+  "priority": "HIGH",
+  "remindAt": [
+    "2026-06-14T12:00:00Z",
+    "2026-06-15T12:00:00Z"
+  ]
+}
+
+### 4. 取得任務列表
+GET {{baseUrl}}/tasks?userId={{userId}}&status=PENDING
+
+### 5. 取得單一任務詳細資訊
+GET {{baseUrl}}/tasks/{{taskId}}
+
+### 6. 更新任務狀態為已完成
+PATCH {{baseUrl}}/tasks/{{taskId}}
+Content-Type: application/json
+
+{
+  "status": "COMPLETED"
+}
+
+### 7. 新增額外的提醒
+POST {{baseUrl}}/tasks/{{taskId}}/reminders
+Content-Type: application/json
+
+{
+  "remindAt": "2026-06-14T18:00:00Z"
+}
+
+### 8. 刪除單一提醒
+DELETE {{baseUrl}}/reminders/{{reminderId}}
+
+### 9. 刪除任務
+DELETE {{baseUrl}}/tasks/{{taskId}}

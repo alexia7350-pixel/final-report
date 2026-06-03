@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>任務即將到期提醒</title>
+  <style>
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    h1 { color: #2563eb; font-size: 24px; margin-top: 0; }
+    .task-details { background: #f8fafc; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0; border-radius: 0 4px 4px 0; }
+    .task-details p { margin: 5px 0; }
+    .btn { display: inline-block; background: #2563eb; color: #ffffff !important; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; margin-top: 20px; }
+    .footer { font-size: 12px; color: #64748b; margin-top: 30px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>哈囉 {{userName}}，您有一個任務即將到期！</h1>
+    <p>提醒您，以下任務即將迎來截止日期，請記得在期限前完成喔：</p>
+    
+    <div class="task-details">
+      <p><strong>作業名稱：</strong> {{taskTitle}}</p>
+      <p><strong>所屬課程：</strong> {{courseName}}</p>
+      <p><strong>截止時間：</strong> <span style="color: #e11d48; font-weight: bold;">{{dueDate}}</span></p>
+      <p><strong>備註說明：</strong> {{description}}</p>
+    </div>
+
+    <p>若您已經完成該任務，您可以點擊下方按鈕前往系統將其標記為「已完成」。</p>
+    
+    <div style="text-align: center;">
+      <a href="{{systemUrl}}/tasks/{{taskId}}" class="btn">前往檢視任務</a>
+    </div>
+
+    <div class="footer">
+      本信件為系統自動發送，請勿直接回覆。<br>
+      © 2026 作業提醒管理系統
+    </div>
+  </div>
+</body>
+</html>

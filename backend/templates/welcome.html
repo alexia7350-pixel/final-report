@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>歡迎加入 作業提醒管理系統</title>
+  <style>
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+    h1 { color: #10b981; font-size: 26px; }
+    .icon { font-size: 50px; margin-bottom: 20px; }
+    p { font-size: 16px; line-height: 1.6; text-align: left; }
+    .btn { display: inline-block; background: #10b981; color: #ffffff !important; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; margin-top: 30px; }
+    .footer { font-size: 12px; color: #64748b; margin-top: 40px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">👋</div>
+    <h1>歡迎來到 作業提醒管理系統！</h1>
+    <p>親愛的 <strong>{{userName}}</strong> 您好：</p>
+    <p>感謝您註冊我們的服務！有了作業提醒管理系統，您再也不用擔心錯過任何重要的作業或報告繳交期限了。</p>
+    <p>您可以輕鬆地將課程作業新增至系統中，並自由設定多個提醒時間（如前一天、前三小時）。我們會透過 Email 或 LINE 在您指定的時間準時通知您。</p>
+    
+    <a href="{{systemUrl}}/tasks" class="btn">立即建立第一筆任務</a>
+
+    <div class="footer">
+      本信件為系統自動發送，請勿直接回覆。<br>
+      © 2026 作業提醒管理系統
+    </div>
+  </div>
+</body>
+</html>
